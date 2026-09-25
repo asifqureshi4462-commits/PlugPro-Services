@@ -9,12 +9,16 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.plugpro.R;
 import com.plugpro.data.model.Booking;
 import com.plugpro.data.model.ServiceProvider;
@@ -30,7 +34,8 @@ import java.util.List;
 public class ProviderDashboardFragment extends Fragment {
 
     private TextView tvStatusBadge, tvTotalEarnings, tvActiveJobsCount, tvNoPending;
-    private Button btnSetAvailability;
+    private Button btnSetAvailability, btnSimulateNotification;
+    private SwitchCompat switchNotifications;
     private ProgressBar progressBar;
     private SwipeRefreshLayout swipeRefresh;
     private RecyclerView rvPending;
@@ -39,6 +44,8 @@ public class ProviderDashboardFragment extends Fragment {
     private BookingRepository bookingRepository;
     private ProviderRepository providerRepository;
     private PreferenceHelper prefs;
+    private ListenerRegistration pendingBookingsListener;
+    private boolean isInitialSnapshot = true;
 
     @Nullable
     @Override
@@ -54,6 +61,8 @@ public class ProviderDashboardFragment extends Fragment {
         tvActiveJobsCount = view.findViewById(R.id.tvActiveJobsCount);
         tvNoPending = view.findViewById(R.id.tvNoPendingRequests);
         btnSetAvailability = view.findViewById(R.id.btnSetAvailability);
+        btnSimulateNotification = view.findViewById(R.id.btnSimulateNotification);
+        switchNotifications = view.findViewById(R.id.switchNotifications);
         progressBar = view.findViewById(R.id.progressBarProviderDashboard);
         swipeRefresh = view.findViewById(R.id.swipeRefreshDashboard);
         rvPending = view.findViewById(R.id.rvProviderPendingBookings);
@@ -66,12 +75,77 @@ public class ProviderDashboardFragment extends Fragment {
         });
         rvPending.setAdapter(adapter);
 
+        // Load saved notification preference
+        boolean notificationsEnabled = requireContext().getSharedPreferences("plugpro_prefs", 0)
+                .getBoolean("provider_notifications_enabled", true);
+        switchNotifications.setChecked(notificationsEnabled);
+
+        switchNotifications.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            requireContext().getSharedPreferences("plugpro_prefs", 0)
+                    .edit()
+                    .putBoolean("provider_notifications_enabled", isChecked)
+                    .apply();
+
+            if (isChecked) {
+                Toast.makeText(getContext(), "🔔 Booking push alerts enabled", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getContext(), "🔕 Booking push alerts muted", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        btnSimulateNotification.setOnClickListener(v -> {
+            if (switchNotifications.isChecked()) {
+                Toast.makeText(getContext(), "🔔 New Booking Request from Alex Johnson! Service: Electrical Repair (₹499)", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(getContext(), "Notifications are currently toggled OFF. Turn switch ON to see alerts.", Toast.LENGTH_SHORT).show();
+            }
+        });
+
         btnSetAvailability.setOnClickListener(v -> startActivity(new Intent(getContext(), ProviderAvailabilityActivity.class)));
         swipeRefresh.setOnRefreshListener(this::loadDashboardData);
 
         loadDashboardData();
+        setupRealtimeBookingAlerts();
 
         return view;
+    }
+
+    private void setupRealtimeBookingAlerts() {
+        String providerId = FirebaseUtil.getCurrentUserId();
+        if (providerId.isEmpty()) return;
+
+        isInitialSnapshot = true;
+        pendingBookingsListener = FirebaseUtil.getBookingsRef()
+                .whereEqualTo("providerId", providerId)
+                .whereEqualTo("status", Booking.STATUS_PENDING)
+                .addSnapshotListener((snapshots, error) -> {
+                    if (error != null || snapshots == null) return;
+
+                    if (isInitialSnapshot) {
+                        isInitialSnapshot = false;
+                        return;
+                    }
+
+                    for (DocumentChange dc : snapshots.getDocumentChanges()) {
+                        if (dc.getType() == DocumentChange.Type.ADDED) {
+                            Booking newBooking = dc.getDocument().toObject(Booking.class);
+                            if (newBooking != null && switchNotifications.isChecked()) {
+                                Toast.makeText(getContext(),
+                                        "🔔 New Booking Alert: " + newBooking.getCustomerName() + " requested " + newBooking.getServiceName() + "!",
+                                        Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    }
+                    loadDashboardData();
+                });
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (pendingBookingsListener != null) {
+            pendingBookingsListener.remove();
+        }
     }
 
     private void loadDashboardData() {

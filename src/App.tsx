@@ -28,7 +28,8 @@ import {
   HardHat,
   Droplet,
   AirVent,
-  Paintbrush
+  Paintbrush,
+  Bell
 } from 'lucide-react';
 
 interface Provider {
@@ -158,6 +159,19 @@ export default function App() {
   const [bookingAddress, setBookingAddress] = useState('Flat 402, Oakwood Towers, Metro Blvd');
   const [bookingProblem, setBookingProblem] = useState('Switchboard sparking & main circuit breaker tripping repeatedly.');
 
+  // Notification toggle state
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [toastAlert, setToastAlert] = useState<{ id: string; title: string; message: string } | null>(null);
+
+  const triggerToastAlert = (title: string, message: string) => {
+    if (!notificationsEnabled) return;
+    const alertId = String(Date.now());
+    setToastAlert({ id: alertId, title, message });
+    setTimeout(() => {
+      setToastAlert(current => current?.id === alertId ? null : current);
+    }, 4500);
+  };
+
   const categories = [
     { name: 'All', icon: Wrench },
     { name: 'Repairing', icon: Zap },
@@ -186,6 +200,10 @@ export default function App() {
       status: 'Pending'
     };
     setBookings([newBooking, ...bookings]);
+    triggerToastAlert(
+      '🔔 New Booking Request!',
+      `Customer placed a new booking for ${selectedProvider.profession} (${bookingTime}) - ₹${selectedProvider.hourlyRate + 49}`
+    );
     setSimulatorView('bookings_list');
   };
 
@@ -373,6 +391,28 @@ export default function App() {
 
                 {/* Device Screen Body */}
                 <div className="flex-1 bg-slate-50 text-slate-900 rounded-[34px] overflow-hidden flex flex-col relative pt-7">
+                  {/* Real-time Push Notification Toast Alert Banner */}
+                  {toastAlert && (
+                    <div className="absolute top-9 left-3 right-3 z-50 bg-slate-950/95 text-white p-3 rounded-2xl border border-amber-500/60 shadow-2xl backdrop-blur-md flex items-start gap-2.5 animate-in fade-in slide-in-from-top-4 duration-200">
+                      <div className="w-8 h-8 rounded-xl bg-amber-500 flex items-center justify-center text-slate-950 font-black flex-shrink-0 mt-0.5">
+                        <Bell className="w-4 h-4 fill-slate-950" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <h6 className="text-[11px] font-extrabold text-amber-400">{toastAlert.title}</h6>
+                          <span className="text-[9px] text-slate-400">just now</span>
+                        </div>
+                        <p className="text-[11px] text-slate-200 mt-0.5 leading-snug">{toastAlert.message}</p>
+                      </div>
+                      <button
+                        onClick={() => setToastAlert(null)}
+                        className="text-slate-400 hover:text-white p-0.5"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
+
                   {/* SCREEN 1: CUSTOMER HOME */}
                   {simulatorView === 'home' && (
                     <div className="flex-1 flex flex-col overflow-y-auto">
@@ -806,6 +846,58 @@ export default function App() {
                             <div className="text-xs font-bold text-emerald-900">Verified Professional</div>
                             <p className="text-[10px] text-emerald-700">Your profile is active in marketplace search.</p>
                           </div>
+                        </div>
+
+                        {/* Push Notification Toggle Switch Card */}
+                        <div className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2.5">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2.5">
+                              <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${notificationsEnabled ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-400'}`}>
+                                <Bell className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-xs font-bold text-slate-900">Toggle Notifications</div>
+                                <div className="text-[10px] text-slate-500">Live toast alert on incoming bookings</div>
+                              </div>
+                            </div>
+
+                            {/* Custom Toggle Switch */}
+                            <button
+                              onClick={() => {
+                                const nextState = !notificationsEnabled;
+                                setNotificationsEnabled(nextState);
+                                if (nextState) {
+                                  triggerToastAlert('🔔 Notifications Enabled', 'You will receive live toast alerts for new bookings');
+                                }
+                              }}
+                              className={`w-11 h-6 rounded-full transition-colors relative p-0.5 focus:outline-none ${
+                                notificationsEnabled ? 'bg-amber-500' : 'bg-slate-300'
+                              }`}
+                            >
+                              <div
+                                className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
+                                  notificationsEnabled ? 'translate-x-5' : 'translate-x-0'
+                                }`}
+                              />
+                            </button>
+                          </div>
+
+                          <button
+                            onClick={() => {
+                              if (notificationsEnabled) {
+                                triggerToastAlert(
+                                  '🔔 New Booking Request!',
+                                  'Customer Alex Johnson requested Electrical Circuit Repair for 05:00 PM (₹499)'
+                                );
+                              } else {
+                                alert('Notifications are currently toggled OFF. Turn ON the switch above to receive live toast alerts.');
+                              }
+                            }}
+                            className="w-full py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1.5"
+                          >
+                            <Zap className="w-3.5 h-3.5" />
+                            Test Push Notification Toast
+                          </button>
                         </div>
 
                         {/* Earnings Metrics */}
