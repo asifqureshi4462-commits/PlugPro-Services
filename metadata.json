@@ -1,0 +1,6 @@
+{
+  "name": "PlugPro - Home Services Marketplace",
+  "description": "On-demand home services marketplace for booking verified electricians, plumbers, AC technicians, and home repair professionals.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,711 +1,300 @@
-PlugPro ⚡
+# PlugPro - Home Services Marketplace (Android Java & XML)
 
-A modern home-services marketplace Android application that connects customers with trusted service professionals.
+**PlugPro** is an on-demand home service marketplace application inspired by modern Material 3 design paradigms. Built entirely using **Java** and **XML layouts**, adhering to clean MVVM architecture, and integrated with **Google Firebase** (Authentication, Cloud Firestore, Firebase Storage, and Cloud Messaging).
 
-PlugPro helps users discover, compare, schedule, and manage home-service professionals such as electricians, plumbers, AC technicians, cleaners, painters, carpenters, and repair specialists.
-
-> Project Status: Active Development
-Platform: Android
-Language: Java
-UI: XML
-Backend: Firebase
-Architecture: MVVM-style
-
-
-
+The project is lightweight and configured specifically to be opened, edited, and built directly on an Android phone using **AndroidIDE**, **AIDE**, or on desktop using Android Studio.
 
 ---
 
-📱 Overview
+## 1. Complete Project Structure
 
-PlugPro is designed to make home-service booking simple and convenient.
-
-Customers can:
-
-🔎 Search for services
-
-🛠️ Browse service categories
-
-👨‍🔧 Discover professionals
-
-⭐ Check ratings and reviews
-
-💰 View service pricing
-
-📅 Check availability
-
-📍 Provide a service address
-
-📆 Schedule appointments
-
-💬 Chat with professionals
-
-📞 Contact professionals
-
-❤️ Save favorite professionals
-
-📋 Track bookings
-
-⭐ Submit reviews after completed services
-
-
-Service professionals can manage their profile, services, availability, booking requests, and completed jobs.
-
-
----
-
-✨ Main Features
-
-👤 Customer
-
-User registration and login
-
-Email/password authentication
-
-Google Sign-In support
-
-Forgot password
-
-Profile management
-
-Service search
-
-Service categories
-
-Professional discovery
-
-Professional profiles
-
-Experience and ratings
-
-Availability
-
-Booking system
-
-Booking history
-
-Booking status tracking
-
-Favorites
-
-Customer ↔ professional chat
-
-Call professional
-
-Reviews and ratings
-
-Notifications
-
-Saved addresses
-
-Light/Dark theme
-
-
-👨‍🔧 Service Provider
-
-Provider registration
-
-Professional profile
-
-Service selection
-
-Pricing management
-
-Experience information
-
-Service area
-
-Availability management
-
-Booking requests
-
-Accept/reject bookings
-
-Booking status updates
-
-Customer details
-
-Customer chat
-
-Completed jobs
-
-Earnings information
-
-Customer reviews
-
-Verification status
-
-
-🛡️ Admin
-
-The planned admin system will provide:
-
-User management
-
-Provider management
-
-Provider verification
-
-Service/category management
-
-Booking management
-
-Review management
-
-Reports
-
-Notifications
-
-Application settings
-
-
-
----
-
-🔄 Booking Flow
-
-Customer
-   │
-   ↓
-Select Service
-   │
-   ↓
-Browse Professionals
-   │
-   ↓
-View Professional Profile
-   │
-   ↓
-Check Availability
-   │
-   ↓
-Select Date & Time
-   │
-   ↓
-Enter Service Details
-   │
-   ↓
-Confirm Booking
-   │
-   ↓
-Pending
-   │
-   ↓
-Confirmed / Accepted
-   │
-   ↓
-On The Way
-   │
-   ↓
-Started
-   │
-   ↓
-Completed
-   │
-   ↓
-Rating & Review
-
-
----
-
-📊 Booking Statuses
-
-PlugPro uses the following booking states:
-
-Pending
-
-Confirmed
-
-Accepted
-
-On The Way
-
-Started
-
-Completed
-
-Cancelled
-
-Rejected
-
-
-
----
-
-🏗️ Technology Stack
-
-Technology	Purpose
-
-Java	Android application development
-XML	Android UI layouts
-Material Components	Modern UI
-RecyclerView	Dynamic lists
-Firebase Authentication	User authentication
-Cloud Firestore	Application database
-Firebase Storage	Image/file storage
-Firebase Cloud Messaging	Notifications
-Android Navigation	Screen navigation
-SharedPreferences	Local preferences
-PHP + MySQL	Planned web admin panel
-
-
-
----
-
-📂 Project Structure
-
+```
 PlugPro/
-│
 ├── app/
+│   ├── build.gradle
+│   ├── google-services.json
+│   ├── proguard-rules.pro
 │   └── src/
 │       └── main/
+│           ├── AndroidManifest.xml
 │           ├── java/
-│           │   └── com/plugpro/
-│           │       ├── data/
-│           │       │   ├── model/
-│           │       │   ├── repository/
-│           │       │   └── datasource/
-│           │       │
-│           │       ├── ui/
-│           │       │   ├── auth/
-│           │       │   ├── home/
-│           │       │   ├── services/
-│           │       │   ├── providers/
-│           │       │   ├── booking/
-│           │       │   ├── chat/
-│           │       │   ├── reviews/
-│           │       │   ├── favorites/
-│           │       │   ├── profile/
-│           │       │   └── provider/
-│           │       │
-│           │       ├── notification/
-│           │       └── utils/
-│           │
+│           │   └── com/
+│           │       └── plugpro/
+│           │           ├── PlugProApplication.java
+│           │           ├── data/
+│           │           │   ├── model/
+│           │           │   │   ├── User.java
+│           │           │   │   ├── ServiceProvider.java
+│           │           │   │   ├── ServiceCategory.java
+│           │           │   │   ├── Booking.java
+│           │           │   │   ├── ChatMessage.java
+│           │           │   │   ├── ChatChannel.java
+│           │           │   │   ├── Review.java
+│           │           │   │   └── Favorite.java
+│           │           │   └── repository/
+│           │           │       ├── AuthRepository.java
+│           │           │       ├── ProviderRepository.java
+│           │           │       ├── BookingRepository.java
+│           │           │       └── ChatRepository.java
+│           │           ├── notification/
+│           │           │   └── PlugProMessagingService.java
+│           │           ├── ui/
+│           │           │   ├── adapters/
+│           │           │   │   ├── CategoryHorizontalAdapter.java
+│           │           │   │   ├── CategoryGridAdapter.java
+│           │           │   │   ├── ProviderAdapter.java
+│           │           │   │   ├── BookingAdapter.java
+│           │           │   │   ├── ChatListAdapter.java
+│           │           │   │   ├── MessageAdapter.java
+│           │           │   │   ├── ReviewAdapter.java
+│           │           │   │   └── OnboardingAdapter.java
+│           │           │   ├── auth/
+│           │           │   │   ├── SplashActivity.java
+│           │           │   │   ├── OnboardingActivity.java
+│           │           │   │   ├── LoginActivity.java
+│           │           │   │   ├── SignupActivity.java
+│           │           │   │   └── ForgotPasswordActivity.java
+│           │           │   ├── booking/
+│           │           │   │   ├── BookingScheduleActivity.java
+│           │           │   │   └── BookingDetailActivity.java
+│           │           │   ├── chat/
+│           │           │   │   └── ChatActivity.java
+│           │           │   ├── customer/
+│           │           │   │   ├── MainActivity.java
+│           │           │   │   ├── HomeFragment.java
+│           │           │   │   ├── ServicesFragment.java
+│           │           │   │   ├── BookingsFragment.java
+│           │           │   │   ├── ChatListFragment.java
+│           │           │   │   └── CustomerProfileFragment.java
+│           │           │   ├── favorites/
+│           │           │   │   └── FavoritesActivity.java
+│           │           │   ├── notifications/
+│           │           │   │   └── NotificationsActivity.java
+│           │           │   ├── provider/
+│           │           │   │   ├── ProviderMainActivity.java
+│           │           │   │   ├── ProviderDashboardFragment.java
+│           │           │   │   ├── ProviderBookingsFragment.java
+│           │           │   │   ├── ProviderAvailabilityActivity.java
+│           │           │   │   └── ProviderRegistrationActivity.java
+│           │           │   ├── providers/
+│           │           │   │   └── ProviderDetailActivity.java
+│           │           │   └── search/
+│           │           │       └── SearchActivity.java
+│           │           └── utils/
+│           │               ├── DateTimeUtil.java
+│           │               ├── FirebaseUtil.java
+│           │               ├── PreferenceHelper.java
+│           │               ├── SeedDataUtil.java
+│           │               └── ValidationUtil.java
 │           └── res/
 │               ├── drawable/
+│               │   ├── bg_banner_card.xml
+│               │   ├── bg_chip_selected.xml
+│               │   ├── bg_chip_unselected.xml
+│               │   ├── bg_message_received.xml
+│               │   ├── bg_message_sent.xml
+│               │   ├── bg_search_bar.xml
+│               │   ├── ic_arrow_back.xml
+│               │   ├── ic_booking.xml
+│               │   ├── ic_calendar.xml
+│               │   ├── ic_call.xml
+│               │   ├── ic_chat.xml
+│               │   ├── ic_check_circle.xml
+│               │   ├── ic_clock.xml
+│               │   ├── ic_heart.xml
+│               │   ├── ic_heart_filled.xml
+│               │   ├── ic_home.xml
+│               │   ├── ic_location.xml
+│               │   ├── ic_logo.xml
+│               │   ├── ic_notification.xml
+│               │   ├── ic_profile.xml
+│               │   ├── ic_search.xml
+│               │   ├── ic_send.xml
+│               │   ├── ic_services.xml
+│               │   ├── ic_star.xml
+│               │   └── ic_verified.xml
 │               ├── layout/
+│               │   ├── activity_booking_detail.xml
+│               │   ├── activity_booking_schedule.xml
+│               │   ├── activity_category_detail.xml
+│               │   ├── activity_chat.xml
+│               │   ├── activity_favorites.xml
+│               │   ├── activity_forgot_password.xml
+│               │   ├── activity_login.xml
+│               │   ├── activity_main.xml
+│               │   ├── activity_notifications.xml
+│               │   ├── activity_onboarding.xml
+│               │   ├── activity_provider_availability.xml
+│               │   ├── activity_provider_detail.xml
+│               │   ├── activity_provider_main.xml
+│               │   ├── activity_provider_registration.xml
+│               │   ├── activity_search.xml
+│               │   ├── activity_signup.xml
+│               │   ├── activity_splash.xml
+│               │   ├── dialog_add_review.xml
+│               │   ├── fragment_bookings.xml
+│               │   ├── fragment_chat_list.xml
+│               │   ├── fragment_customer_profile.xml
+│               │   ├── fragment_home.xml
+│               │   ├── fragment_provider_bookings.xml
+│               │   ├── fragment_provider_dashboard.xml
+│               │   ├── fragment_services.xml
+│               │   ├── item_booking_card.xml
+│               │   ├── item_category_grid.xml
+│               │   ├── item_category_horizontal.xml
+│               │   ├── item_chat_preview.xml
+│               │   ├── item_message_received.xml
+│               │   ├── item_message_sent.xml
+│               │   ├── item_onboarding_page.xml
+│               │   ├── item_provider_card.xml
+│               │   └── item_review.xml
 │               ├── menu/
-│               ├── mipmap/
-│               ├── navigation/
+│               │   ├── bottom_nav_menu.xml
+│               │   └── provider_bottom_nav_menu.xml
 │               ├── values/
-│               ├── values-night/
-│               └── xml/
-│
+│               │   ├── colors.xml
+│               │   ├── dimens.xml
+│               │   ├── strings.xml
+│               │   └── themes.xml
+│               └── values-night/
+│                   └── themes.xml
+├── build.gradle
+├── settings.gradle
+├── gradle.properties
+├── firebase-blueprint.json
 ├── firebase/
 │   ├── firestore.rules
 │   ├── firestore.indexes.json
 │   └── storage.rules
-│
-├── gradle/
-├── build.gradle
-├── settings.gradle
-├── gradle.properties
-├── google-services.json
-└── README.md
-
+└── admin/
+    ├── index.php
+    ├── config.php
+    └── schema.sql
+```
 
 ---
 
-🔥 Firebase Structure
+## 2. Technologies Used
 
-The application is designed around these Firestore collections:
-
-users
-providers
-services
-bookings
-reviews
-favorites
-chats
-messages
-notifications
-settings
-
-Each important document should contain appropriate timestamps such as:
-
-createdAt
-updatedAt
-
-Firebase Security Rules are required to restrict users, providers, and administrators to authorized operations.
-
+- **Operating System Platform:** Android (Min SDK 24 / Target SDK 34)
+- **Programming Language:** Java 17 (Pure Java, no Kotlin)
+- **UI Framework:** Android XML with Google Material Components 3 (`com.google.android.material:material:1.11.0`)
+- **Layout Engines:** ConstraintLayout, NestedScrollView, RelativeLayout, LinearLayout
+- **Navigation:** BottomNavigationView, FragmentTransactions, ViewPager2
+- **Data Architecture:** MVVM (Model - View - Repository pattern)
+- **Backend & Database:** Firebase BOM 32.8.0
+  - Firebase Authentication (Email/Password)
+  - Cloud Firestore (Offline persistence enabled, realtime document listeners)
+  - Firebase Storage (Profile pictures, service attachments)
+  - Firebase Cloud Messaging (Push notification alerts)
+- **Image Pipeline:** Glide 4.16.0 with CircleImageView for avatars
+- **Web Admin Panel:** PHP 8, MySQL, Vanilla HTML5/CSS3/JavaScript (Zero React/Vue)
 
 ---
 
-🔐 Security
+## 3. Step-by-Step Guide: Open & Build on Phone (AndroidIDE)
 
-PlugPro follows these principles:
+### Step 1: Install AndroidIDE
+1. Download **AndroidIDE** from the official F-Droid repository or GitHub releases.
+2. Grant storage permissions when prompted.
+3. Open AndroidIDE and let the initial bootstrap toolchain install OpenJDK 17 and Android SDK 34.
 
-Firebase Authentication for account security
+### Step 2: Place the Code on Device
+Copy this `PlugPro` project folder to your Android internal storage path:
+`/sdcard/AndroidIDEProjects/PlugPro` or clone it via the built-in terminal:
+```bash
+cd /storage/emulated/0/AndroidIDEProjects
+git clone <your-repo-url> PlugPro
+```
 
-Firestore Security Rules
+### Step 3: Open Project in AndroidIDE
+1. Open AndroidIDE, tap **Open Project**, and navigate to `PlugPro`.
+2. AndroidIDE will automatically read `settings.gradle` and initialize Gradle project syncing.
 
-Storage Security Rules
-
-Input validation
-
-Role-based access
-
-Provider verification
-
-No hardcoded secret API keys
-
-Authorized access to bookings
-
-Protected user information
-
-
-Sensitive credentials should never be committed to the repository.
-
-
----
-
-💳 Payments
-
-The initial architecture supports:
-
-Cash on service
-
-Payment pending
-
-Payment completed
-
-
-The payment system is designed so a payment gateway such as Razorpay can be integrated later.
-
-Fake payment-success implementations should not be used in production.
-
+### Step 4: Build Debug APK
+1. In the top toolbar, tap the **Run (Green Play)** button, or open the terminal inside AndroidIDE and run:
+   ```bash
+   ./gradlew assembleDebug
+   ```
+2. The generated debug APK will be located at:
+   `app/build/outputs/apk/debug/app-debug.apk`
+3. Tap **Install** directly from AndroidIDE to test on your phone.
 
 ---
 
-📱 Phone Development
+## 4. Firebase Setup & Configuration
 
-PlugPro is intended to be developable from an Android phone.
-
-Recommended workflow:
-
-Phone
- │
- ├── Acode
- │
- ├── AndroidIDE
- │
- ├── Termux
- │
- └── GitHub
-        │
-        ↓
-     PlugPro
-        │
-        ↓
-       APK
-
-The project avoids:
-
-Kotlin
-
-Jetpack Compose
-
-Flutter
-
-React Native
-
-React
-
-Vue
-
-Angular
-
-Unnecessary PC-only tooling
-
-
+1. Visit [Firebase Console](https://console.firebase.google.com/) and click **Add project**. Name it `PlugPro`.
+2. Add an **Android app**:
+   - Package name: `com.plugpro`
+   - App nickname: `PlugPro`
+3. Download `google-services.json` and replace `app/google-services.json`.
+4. In the Firebase Console:
+   - **Authentication**: Enable the **Email/Password** sign-in provider.
+   - **Firestore Database**: Click **Create database** (Start in production or test mode).
+   - **Firebase Storage**: Click **Get started** to provision the default storage bucket.
+5. Deploy security rules from the `firebase/` directory:
+   ```bash
+   firebase deploy --only firestore:rules,storage
+   ```
 
 ---
 
-🚀 Setup
+## 5. Security Rules
 
-1. Clone the repository
-
-git clone https://github.com/YOUR_USERNAME/PlugPro.git
-cd PlugPro
-
-2. Open the project
-
-Open the project in AndroidIDE or another compatible Android development environment.
-
-3. Configure Firebase
-
-Create a Firebase project and add an Android application.
-
-Download:
-
-google-services.json
-
-Place it inside:
-
-app/google-services.json
-
-Do not commit private credentials or sensitive configuration to a public repository.
-
-4. Enable Firebase Services
-
-Enable the required:
-
-Authentication
-
-Cloud Firestore
-
-Storage
-
-Cloud Messaging
-
-
-5. Configure Firestore
-
-Deploy or manually configure:
-
-firebase/firestore.rules
-firebase/firestore.indexes.json
-
-6. Configure Storage
-
-Apply:
-
-firebase/storage.rules
-
-7. Build
-
-Use AndroidIDE to sync Gradle and build the application.
-
+The Firestore security rules in `firebase/firestore.rules` protect customer and provider data:
+- **Users**: Users can read and update only their own profile; admins have full access.
+- **Providers**: Publicly readable by all customers; only the provider or an admin can update profile details or availability.
+- **Bookings**: Only the assigned customer, assigned provider, or admin can view or modify the booking document.
+- **Reviews**: Publicly readable; customers can only submit a review after placing a booking.
+- **Chats & Messages**: Restricted strictly to the customer and provider participating in the channel.
 
 ---
 
-🧪 Testing
+## 6. How to Create the First Admin
 
-Before release, test:
-
-Registration
-
-Login
-
-Logout
-
-Password reset
-
-Profile editing
-
-Service search
-
-Provider profiles
-
-Favorites
-
-Availability
-
-Booking creation
-
-Booking acceptance
-
-Booking cancellation
-
-Booking status updates
-
-Chat
-
-Notifications
-
-Reviews
-
-Image uploads
-
-Firestore permissions
-
-Storage permissions
-
-Network failure
-
-Empty states
-
-Dark mode
-
-Different screen sizes
-
-
+1. Register an account through the app signup screen with email `admin@plugpro.com`.
+2. Open Firebase Console -> **Firestore Database** -> `users` collection.
+3. Find your user document (matching your Auth UID).
+4. Change the `role` field value from `"customer"` to `"admin"`.
+5. The security rules and admin features recognize `admin@plugpro.com` and `role == 'admin'` automatically.
 
 ---
 
-🗺️ Development Roadmap
+## 7. How to Create the First Provider
 
-Phase 1 — Foundation
-
-Project setup
-
-Theme
-
-Navigation
-
-Splash
-
-Onboarding
-
-Authentication
-
-
-Phase 2 — Customer
-
-Home
-
-Services
-
-Search
-
-Providers
-
-Provider profile
-
-Favorites
-
-Profile
-
-
-Phase 3 — Booking
-
-Availability
-
-Booking creation
-
-Booking details
-
-Booking history
-
-Booking status
-
-
-Phase 4 — Communication
-
-Chat
-
-Call
-
-Notifications
-
-
-Phase 5 — Provider
-
-Provider registration
-
-Dashboard
-
-Booking management
-
-Availability
-
-Services
-
-Earnings
-
-Reviews
-
-
-Phase 6 — Admin
-
-Admin authentication
-
-Dashboard
-
-User management
-
-Provider verification
-
-Services
-
-Bookings
-
-Reviews
-
-Reports
-
-
-Phase 7 — Production
-
-Security audit
-
-Performance optimization
-
-Error handling
-
-Testing
-
-Release build
-
-Play Store preparation
-
-
+1. Open the app and tap **Sign Up**.
+2. Select the **Service Provider** radio button.
+3. Enter Name, Email, Phone, and Password.
+4. The app immediately takes you to `ProviderRegistrationActivity`:
+   - Enter Profession (e.g., *Master Electrician*).
+   - Enter Years of Experience (e.g., *8*).
+   - Enter Hourly Rate (e.g., *450*).
+   - Enter Service Area (e.g., *Metro & Suburbs*).
+   - Enter Bio/About.
+5. Tap **Complete Registration**. The provider document is created in Firestore with status `pending`.
+6. To verify the provider:
+   - In Firestore Console or via the Web Admin Panel, toggle `verifiedStatus` to `"verified"`.
+   - The provider now receives the green verified badge and appears at the top of search!
 
 ---
 
-📌 Current Development Principle
+## 8. How to Test Customer Booking
 
-PlugPro should be developed as a real working application, not merely a UI demonstration.
-
-Every major feature should have:
-
-UI
-↓
-Validation
-↓
-Business Logic
-↓
-Repository
-↓
-Firebase
-↓
-Real Data
-
-Avoid fake buttons, unnecessary placeholder screens, hardcoded production data, and "Coming Soon" implementations for features that are advertised as available.
-
+1. Sign up or log in as a customer.
+2. On the **Home** screen, tap on any recommended professional card (e.g., *James Carter*).
+3. Review their bio, rating (4.9 ★), jobs done, and available time slots.
+4. Tap **Schedule Service**.
+5. Select Date and preferred Time Slot, input address, and describe the problem.
+6. The screen automatically calculates the total fee (e.g. ₹450 service fee + ₹49 convenience = ₹499).
+7. Tap **Confirm Booking**.
+8. View the live status timeline in `BookingDetailActivity`.
+9. Log in as the provider on another device (or switch mode) to accept the booking and mark it *On The Way*, *Started*, and *Completed*.
+10. Once completed, the customer can submit a 1–5 star rating and written review!
 
 ---
 
-🤝 Contribution
+## 9. Known Limitations
 
-Contributions are welcome.
-
-Before submitting changes:
-
-1. Test the feature.
-
-
-2. Follow the existing Java/XML architecture.
-
-
-3. Keep Firebase access secure.
-
-
-4. Avoid unnecessary dependencies.
-
-
-5. Ensure existing features are not broken.
-
-
-
-
----
-
-📄 License
-
-Choose an appropriate open-source license before making the repository public.
-
-For example:
-
-MIT License
-
-if you want others to use, modify, and distribute the project under the MIT terms.
-
-
----
-
-⚡ PlugPro
-
-Find. Book. Connect. Get It Done.
-
-A modern platform connecting customers with trusted home-service professionals.
+- Real SMS verification requires an SMS gateway (Twilio / Firebase Phone Auth) to be configured with API keys.
+- Online payments are scaffolded under `paymentMethod = "Cash on Service"`; Razorpay or Stripe SDKs can be plugged in by swapping the confirmation intent.

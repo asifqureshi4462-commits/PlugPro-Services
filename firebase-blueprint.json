@@ -1,0 +1,127 @@
+{
+  "entities": {
+    "users": {
+      "title": "Users",
+      "description": "Registered app users (Customers, Service Providers, and Admins)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "role": { "type": "string", "enum": ["customer", "provider", "admin"] },
+        "profileImageUrl": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "name", "email", "role"]
+    },
+    "providers": {
+      "title": "Service Providers",
+      "description": "Verified and unverified home service professionals",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "profession": { "type": "string" },
+        "categoryId": { "type": "string" },
+        "experienceYears": { "type": "number" },
+        "rating": { "type": "number" },
+        "reviewCount": { "type": "number" },
+        "completedJobs": { "type": "number" },
+        "hourlyRate": { "type": "number" },
+        "about": { "type": "string" },
+        "serviceArea": { "type": "string" },
+        "verifiedStatus": { "type": "string", "enum": ["pending", "verified", "rejected"] },
+        "profileImageUrl": { "type": "string" },
+        "isAvailable": { "type": "boolean" },
+        "availableDays": { "type": "array", "items": { "type": "string" } },
+        "availableTimeSlots": { "type": "array", "items": { "type": "string" } },
+        "phone": { "type": "string" },
+        "email": { "type": "string" }
+      },
+      "required": ["id", "userId", "name", "profession", "hourlyRate", "verifiedStatus"]
+    },
+    "services": {
+      "title": "Service Categories",
+      "description": "Available home service categories like Repairing, Installation, Plumbing, AC Repair",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "iconResName": { "type": "string" },
+        "startingPrice": { "type": "number" },
+        "active": { "type": "boolean" }
+      },
+      "required": ["id", "name", "startingPrice", "active"]
+    },
+    "bookings": {
+      "title": "Bookings",
+      "description": "Customer service bookings and appointment requests",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customerId": { "type": "string" },
+        "customerName": { "type": "string" },
+        "customerPhone": { "type": "string" },
+        "providerId": { "type": "string" },
+        "providerName": { "type": "string" },
+        "providerProfession": { "type": "string" },
+        "providerPhone": { "type": "string" },
+        "serviceId": { "type": "string" },
+        "serviceName": { "type": "string" },
+        "date": { "type": "string" },
+        "timeSlot": { "type": "string" },
+        "address": { "type": "string" },
+        "problemDescription": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": ["Pending", "Confirmed", "Accepted", "On The Way", "Started", "Completed", "Cancelled", "Rejected"]
+        },
+        "serviceFee": { "type": "number" },
+        "additionalCharges": { "type": "number" },
+        "totalAmount": { "type": "number" },
+        "paymentStatus": { "type": "string", "enum": ["Pending", "Completed"] },
+        "paymentMethod": { "type": "string", "enum": ["Cash on Service", "Online"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "customerId", "providerId", "serviceName", "date", "timeSlot", "address", "status", "totalAmount"]
+    },
+    "reviews": {
+      "title": "Reviews and Ratings",
+      "description": "Customer feedback and ratings for completed bookings",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "bookingId": { "type": "string" },
+        "customerId": { "type": "string" },
+        "customerName": { "type": "string" },
+        "providerId": { "type": "string" },
+        "rating": { "type": "number" },
+        "comment": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "bookingId", "customerId", "providerId", "rating", "comment"]
+    },
+    "chats": {
+      "title": "Chats",
+      "description": "Conversation channels between customers and providers",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customerId": { "type": "string" },
+        "customerName": { "type": "string" },
+        "providerId": { "type": "string" },
+        "providerName": { "type": "string" },
+        "lastMessage": { "type": "string" },
+        "lastTimestamp": { "type": "string" },
+        "unreadCountCustomer": { "type": "number" },
+        "unreadCountProvider": { "type": "number" }
+      },
+      "required": ["id", "customerId", "providerId"]
+    }
+  }
+}

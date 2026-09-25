@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PlugPro</string>
+    <string name="tagline">Verified Home Service Professionals at Your Fingertips</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title_1">Find Trusted Professionals</string>
+    <string name="onboarding_desc_1">Connect with verified electricians, plumbers, and technicians for all your home repair needs.</string>
+    <string name="onboarding_title_2">Book Services Easily</string>
+    <string name="onboarding_desc_2">Schedule an appointment at your preferred date and time with upfront transparent pricing.</string>
+    <string name="onboarding_title_3">Get Work Done Safely</string>
+    <string name="onboarding_desc_3">Track your booking in real time, communicate directly, and pay safely on completion.</string>
+    <string name="skip">Skip</string>
+    <string name="next">Next</string>
+    <string name="get_started">Get Started</string>
+
+    <!-- Auth -->
+    <string name="welcome_back">Welcome Back!</string>
+    <string name="login_subtitle">Sign in to book or manage your home services</string>
+    <string name="email">Email Address</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="full_name">Full Name</string>
+    <string name="phone_number">Phone Number</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="sign_in">Sign In</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="dont_have_account">Don\'t have an account? Sign Up</string>
+    <string name="already_have_account">Already have an account? Sign In</string>
+    <string name="reset_password">Reset Password</string>
+    <string name="send_reset_link">Send Reset Link</string>
+    <string name="reset_link_sent">Password reset instructions sent to your email.</string>
+    <string name="register_as_provider_prompt">Are you a professional technician? Register here</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_services">Services</string>
+    <string name="nav_bookings">Bookings</string>
+    <string name="nav_chat">Chat</string>
+    <string name="nav_profile">Profile</string>
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_earnings">Earnings</string>
+
+    <!-- Home Screen -->
+    <string name="search_hint">What service do you need?</string>
+    <string name="categories">Categories</string>
+    <string name="see_all">See All</string>
+    <string name="banner_title">Need help with repairs or installation?</string>
+    <string name="banner_cta">Book Now</string>
+    <string name="recommended_pros">Recommended Professionals</string>
+    <string name="verified">Verified</string>
+    <string name="per_hour">/hr</string>
+
+    <!-- Provider Details -->
+    <string name="about_pro">About Professional</string>
+    <string name="experience">Experience</string>
+    <string name="rating">Rating</string>
+    <string name="completed_jobs">Jobs Done</string>
+    <string name="reviews">Reviews</string>
+    <string name="hourly_fee">Hourly Rate</string>
+    <string name="availability">Availability</string>
+    <string name="skills_services">Skills &amp; Services</string>
+    <string name="btn_schedule">Schedule Service</string>
+    <string name="btn_chat">Chat</string>
+    <string name="btn_call">Call</string>
+
+    <!-- Booking Flow -->
+    <string name="select_date">Select Date</string>
+    <string name="select_time">Select Time Slot</string>
+    <string name="service_address">Service Address</string>
+    <string name="address_hint">Enter your house/flat number, landmark, and street</string>
+    <string name="problem_description">Describe Your Problem</string>
+    <string name="problem_hint">E.g., Switchboard sparking, main circuit breaker tripping...</string>
+    <string name="booking_summary">Booking Summary</string>
+    <string name="service_fee">Service Fee</string>
+    <string name="additional_charges">Convenience Charges</string>
+    <string name="total_amount">Total Amount</string>
+    <string name="payment_method">Payment Method</string>
+    <string name="cash_on_service">Cash on Service</string>
+    <string name="confirm_booking">Confirm Booking</string>
+    <string name="booking_success">Booking placed successfully!</string>
+
+    <!-- Booking Statuses -->
+    <string name="status_pending">Pending</string>
+    <string name="status_confirmed">Confirmed</string>
+    <string name="status_accepted">Accepted</string>
+    <string name="status_on_the_way">On The Way</string>
+    <string name="status_started">Started</string>
+    <string name="status_completed">Completed</string>
+    <string name="status_cancelled">Cancelled</string>
+    <string name="status_rejected">Rejected</string>
+
+    <!-- Booking Tabs -->
+    <string name="tab_upcoming">Upcoming</string>
+    <string name="tab_active">Active</string>
+    <string name="tab_completed">Completed</string>
+    <string name="tab_cancelled">Cancelled</string>
+
+    <!-- Chat -->
+    <string name="type_message">Type a message...</string>
+    <string name="no_messages_yet">No messages yet. Start a conversation!</string>
+    <string name="chat_list_empty">No conversations yet</string>
+
+    <!-- Review Dialog -->
+    <string name="rate_service">Rate &amp; Review Service</string>
+    <string name="review_hint">Share your experience with this professional...</string>
+    <string name="submit_review">Submit Review</string>
+
+    <!-- Provider Portal -->
+    <string name="provider_dashboard">Provider Dashboard</string>
+    <string name="today_bookings">Today\'s Bookings</string>
+    <string name="pending_requests">Pending Requests</string>
+    <string name="active_jobs">Active Jobs</string>
+    <string name="total_earnings">Total Earnings</string>
+    <string name="btn_accept">Accept</string>
+    <string name="btn_reject">Reject</string>
+    <string name="btn_start_job">Start Job</string>
+    <string name="btn_mark_completed">Mark Completed</string>
+    <string name="btn_on_the_way">On The Way</string>
+
+    <!-- Empty States -->
+    <string name="empty_providers">No professionals found in this category.</string>
+    <string name="empty_bookings">No bookings found in this section.</string>
+    <string name="empty_favorites">You haven\'t saved any professionals yet.</string>
+    <string name="empty_search">No matching professionals or services found.</string>
+    <string name="retry">Retry</string>
+</resources>

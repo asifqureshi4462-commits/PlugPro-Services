@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand Primary Colors (Warm Amber / Orange) -->
+    <color name="primary">#F59E0B</color>
+    <color name="primary_dark">#D97706</color>
+    <color name="primary_light">#FEF3C7</color>
+    <color name="primary_container">#FFFBEB</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="on_primary_container">#78350F</color>
+
+    <!-- Secondary / Accent -->
+    <color name="secondary">#1E293B</color>
+    <color name="secondary_light">#334155</color>
+    <color name="accent_blue">#3B82F6</color>
+    <color name="accent_blue_light">#EFF6FF</color>
+
+    <!-- Backgrounds & Surfaces -->
+    <color name="background">#F8FAFC</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_variant">#F1F5F9</color>
+    <color name="card_stroke">#E2E8F0</color>
+
+    <!-- Typography / Text Colors -->
+    <color name="text_primary">#0F172A</color>
+    <color name="text_secondary">#475569</color>
+    <color name="text_tertiary">#94A3B8</color>
+    <color name="text_hint">#CBD5E1</color>
+    <color name="divider">#E2E8F0</color>
+
+    <!-- Status Colors -->
+    <color name="status_verified">#059669</color>
+    <color name="status_verified_bg">#ECFDF5</color>
+    <color name="status_pending">#D97706</color>
+    <color name="status_pending_bg">#FEF3C7</color>
+    <color name="status_rejected">#DC2626</color>
+    <color name="status_rejected_bg">#FEF2F2</color>
+    <color name="status_completed">#2563EB</color>
+    <color name="status_completed_bg">#EFF6FF</color>
+
+    <!-- Rating Star -->
+    <color name="star_gold">#FBBF24</color>
+
+    <!-- Basic Shades -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="transparent">#00000000</color>
+</resources>

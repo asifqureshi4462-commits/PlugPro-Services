@@ -1,0 +1,140 @@
+package com.plugpro.ui.provider;
+
+import android.content.Intent;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import com.plugpro.R;
+import com.plugpro.data.model.Booking;
+import com.plugpro.data.model.ServiceProvider;
+import com.plugpro.data.repository.BookingRepository;
+import com.plugpro.data.repository.ProviderRepository;
+import com.plugpro.ui.adapters.BookingAdapter;
+import com.plugpro.ui.booking.BookingDetailActivity;
+import com.plugpro.utils.FirebaseUtil;
+import com.plugpro.utils.PreferenceHelper;
+import java.util.ArrayList;
+import java.util.List;
+
+public class ProviderDashboardFragment extends Fragment {
+
+    private TextView tvStatusBadge, tvTotalEarnings, tvActiveJobsCount, tvNoPending;
+    private Button btnSetAvailability;
+    private ProgressBar progressBar;
+    private SwipeRefreshLayout swipeRefresh;
+    private RecyclerView rvPending;
+
+    private BookingAdapter adapter;
+    private BookingRepository bookingRepository;
+    private ProviderRepository providerRepository;
+    private PreferenceHelper prefs;
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_provider_dashboard, container, false);
+
+        bookingRepository = new BookingRepository();
+        providerRepository = new ProviderRepository();
+        prefs = new PreferenceHelper(requireContext());
+
+        tvStatusBadge = view.findViewById(R.id.tvProviderStatusBadge);
+        tvTotalEarnings = view.findViewById(R.id.tvTotalEarnings);
+        tvActiveJobsCount = view.findViewById(R.id.tvActiveJobsCount);
+        tvNoPending = view.findViewById(R.id.tvNoPendingRequests);
+        btnSetAvailability = view.findViewById(R.id.btnSetAvailability);
+        progressBar = view.findViewById(R.id.progressBarProviderDashboard);
+        swipeRefresh = view.findViewById(R.id.swipeRefreshDashboard);
+        rvPending = view.findViewById(R.id.rvProviderPendingBookings);
+
+        rvPending.setLayoutManager(new LinearLayoutManager(getContext()));
+        adapter = new BookingAdapter(true, booking -> {
+            Intent intent = new Intent(getContext(), BookingDetailActivity.class);
+            intent.putExtra("booking", booking);
+            startActivity(intent);
+        });
+        rvPending.setAdapter(adapter);
+
+        btnSetAvailability.setOnClickListener(v -> startActivity(new Intent(getContext(), ProviderAvailabilityActivity.class)));
+        swipeRefresh.setOnRefreshListener(this::loadDashboardData);
+
+        loadDashboardData();
+
+        return view;
+    }
+
+    private void loadDashboardData() {
+        progressBar.setVisibility(View.VISIBLE);
+        String providerId = FirebaseUtil.getCurrentUserId();
+
+        // Load provider profile
+        providerRepository.getProviderById(providerId, new ProviderRepository.ProviderCallback() {
+            @Override
+            public void onSuccess(ServiceProvider provider) {
+                if (isAdded()) {
+                    if (provider.isVerified()) {
+                        tvStatusBadge.setText("Status: Verified Professional ✓");
+                        tvStatusBadge.setTextColor(Color.parseColor("#059669"));
+                    } else if ("rejected".equalsIgnoreCase(provider.getVerifiedStatus())) {
+                        tvStatusBadge.setText("Status: Verification Rejected");
+                        tvStatusBadge.setTextColor(Color.parseColor("#DC2626"));
+                    } else {
+                        tvStatusBadge.setText("Status: Pending Verification");
+                        tvStatusBadge.setTextColor(Color.parseColor("#D97706"));
+                    }
+                }
+            }
+
+            @Override
+            public void onError(String message) {}
+        });
+
+        // Load provider bookings
+        bookingRepository.getProviderBookings(providerId, new BookingRepository.BookingsCallback() {
+            @Override
+            public void onSuccess(List<Booking> bookings) {
+                progressBar.setVisibility(View.GONE);
+                swipeRefresh.setRefreshing(false);
+
+                double earnings = 0;
+                int activeJobs = 0;
+                List<Booking> pendingList = new ArrayList<>();
+
+                for (Booking b : bookings) {
+                    if (Booking.STATUS_COMPLETED.equalsIgnoreCase(b.getStatus())) {
+                        earnings += b.getServiceFee();
+                    } else if (Booking.STATUS_ON_THE_WAY.equalsIgnoreCase(b.getStatus()) ||
+                               Booking.STATUS_STARTED.equalsIgnoreCase(b.getStatus()) ||
+                               Booking.STATUS_ACCEPTED.equalsIgnoreCase(b.getStatus())) {
+                        activeJobs++;
+                    } else if (Booking.STATUS_PENDING.equalsIgnoreCase(b.getStatus())) {
+                        pendingList.add(b);
+                    }
+                }
+
+                tvTotalEarnings.setText("₹" + (int) earnings);
+                tvActiveJobsCount.setText(String.valueOf(activeJobs));
+
+                adapter.setBookings(pendingList);
+                tvNoPending.setVisibility(pendingList.isEmpty() ? View.VISIBLE : View.GONE);
+            }
+
+            @Override
+            public void onError(String message) {
+                progressBar.setVisibility(View.GONE);
+                swipeRefresh.setRefreshing(false);
+            }
+        });
+    }
+}
