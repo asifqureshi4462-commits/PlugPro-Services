@@ -29,7 +29,8 @@ public class BookingDetailActivity extends AppCompatActivity {
     private ImageView btnBack, btnChat, btnCall;
     private TextView tvBookingId, tvStatus, tvServiceName, tvDateTime;
     private TextView tvProviderName, tvProviderProfession, tvAddress, tvProblem, tvTotal;
-    private Button btnRateReview, btnCancelBooking;
+    private Button btnRateReview, btnCancelBooking, btnOpenLiveMap;
+    private View cardLiveMapTracking;
 
     private Booking booking;
     private BookingRepository bookingRepository;
@@ -67,6 +68,8 @@ public class BookingDetailActivity extends AppCompatActivity {
         tvTotal = findViewById(R.id.tvDetailTotal);
         btnRateReview = findViewById(R.id.btnRateReview);
         btnCancelBooking = findViewById(R.id.btnCancelBooking);
+        btnOpenLiveMap = findViewById(R.id.btnOpenLiveMap);
+        cardLiveMapTracking = findViewById(R.id.cardLiveMapTracking);
     }
 
     private void bindData() {
@@ -135,6 +138,17 @@ public class BookingDetailActivity extends AppCompatActivity {
 
         btnCancelBooking.setOnClickListener(v -> cancelBooking());
         btnRateReview.setOnClickListener(v -> showReviewDialog());
+
+        View.OnClickListener mapClickListener = v -> {
+            if (booking != null) {
+                Intent intent = new Intent(BookingDetailActivity.this, LiveTrackingMapActivity.class);
+                intent.putExtra("booking", booking);
+                startActivity(intent);
+            }
+        };
+
+        if (btnOpenLiveMap != null) btnOpenLiveMap.setOnClickListener(mapClickListener);
+        if (cardLiveMapTracking != null) cardLiveMapTracking.setOnClickListener(mapClickListener);
     }
 
     private void cancelBooking() {

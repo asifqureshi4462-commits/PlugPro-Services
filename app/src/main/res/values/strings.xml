@@ -124,4 +124,13 @@
     <string name="empty_favorites">You haven\'t saved any professionals yet.</string>
     <string name="empty_search">No matching professionals or services found.</string>
     <string name="retry">Retry</string>
+
+    <!-- Google Maps & Tracking -->
+    <string name="google_maps_key" translatable="false">AIzaSyDemoKeyReplaceWithYourGoogleMapsKey</string>
+    <string name="track_pro_live">Track Technician Live</string>
+    <string name="tracking_subtitle">Real-time GPS route and live arrival estimate</string>
+    <string name="technician_on_way">Technician is On The Way</string>
+    <string name="estimated_arrival">Estimated Arrival</string>
+    <string name="service_destination">Service Destination</string>
+    <string name="locate_address_on_map">Locate on Map</string>
 </resources>

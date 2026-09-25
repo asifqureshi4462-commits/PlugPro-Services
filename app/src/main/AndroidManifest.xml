@@ -3,6 +3,8 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
@@ -14,6 +16,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.PlugPro">
+
+        <!-- Google Maps API Key -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_key" />
 
         <!-- Splash Screen (Launcher) -->
         <activity
@@ -63,6 +70,9 @@
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".ui.booking.BookingDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.booking.LiveTrackingMapActivity"
             android:exported="false" />
         <activity
             android:name=".ui.chat.ChatActivity"

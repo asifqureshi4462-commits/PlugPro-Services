@@ -29,7 +29,10 @@ import {
   Droplet,
   AirVent,
   Paintbrush,
-  Bell
+  Bell,
+  Navigation,
+  Compass,
+  Route
 } from 'lucide-react';
 
 interface Provider {
@@ -61,9 +64,27 @@ interface Booking {
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'simulator' | 'admin' | 'androidide' | 'files'>('simulator');
-  const [simulatorView, setSimulatorView] = useState<'home' | 'provider' | 'booking' | 'bookings_list' | 'provider_dashboard'>('home');
+  const [simulatorView, setSimulatorView] = useState<'home' | 'provider' | 'booking' | 'bookings_list' | 'provider_dashboard' | 'map_tracking'>('home');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Live Map GPS Tracking State
+  const [mapProgress, setMapProgress] = useState(35);
+  const [isSimulatingMovement, setIsSimulatingMovement] = useState(true);
+  const [showTrafficLayer, setShowTrafficLayer] = useState(true);
+  const [trackedBooking, setTrackedBooking] = useState<Booking | null>(null);
+
+  // Auto-animate technician movement along route
+  React.useEffect(() => {
+    if (!isSimulatingMovement) return;
+    const interval = setInterval(() => {
+      setMapProgress(prev => {
+        if (prev >= 100) return 100;
+        return prev + 5;
+      });
+    }, 2500);
+    return () => clearInterval(interval);
+  }, [isSimulatingMovement]);
 
   // Sample verified providers
   const [providers, setProviders] = useState<Provider[]>([
@@ -343,6 +364,18 @@ export default function App() {
                   >
                     <Briefcase className="w-4 h-4 text-emerald-400" />
                     Switch to Provider Mode
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!trackedBooking) setTrackedBooking(bookings[0]);
+                      setSimulatorView('map_tracking');
+                    }}
+                    className={`w-full px-3 py-2.5 text-xs font-semibold rounded-lg text-center transition-all flex items-center justify-center gap-2 mt-1.5 ${
+                      simulatorView === 'map_tracking' ? 'bg-amber-500 text-slate-950 font-bold shadow-lg shadow-amber-500/20' : 'bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500/20'
+                    }`}
+                  >
+                    <Navigation className="w-4 h-4 text-amber-400" />
+                    5. Live Map GPS Tracking View
                   </button>
                 </div>
               </div>
@@ -799,22 +832,36 @@ export default function App() {
 
                             <div className="flex items-center justify-between pt-1 border-t border-slate-100">
                               <span className="text-[11px] text-slate-400">Total: <strong className="text-slate-900">₹{b.total}</strong></span>
-                              {b.status === 'Pending' && (
-                                <button
-                                  onClick={() => handleUpdateStatus(b.id, 'Cancelled')}
-                                  className="text-[10px] text-red-600 font-semibold hover:underline"
-                                >
-                                  Cancel Booking
-                                </button>
-                              )}
-                              {b.status === 'Completed' && (
-                                <button
-                                  onClick={() => alert('Review submitted! Professional rating updated.')}
-                                  className="text-[10px] text-amber-600 font-semibold hover:underline"
-                                >
-                                  Rate &amp; Review ★
-                                </button>
-                              )}
+                              <div className="flex items-center gap-2">
+                                {(b.status === 'Pending' || b.status === 'Accepted' || b.status === 'On The Way' || b.status === 'Started') && (
+                                  <button
+                                    onClick={() => {
+                                      setTrackedBooking(b);
+                                      setSimulatorView('map_tracking');
+                                    }}
+                                    className="flex items-center gap-1 px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-lg text-[10px] shadow-sm transition-all"
+                                  >
+                                    <Navigation className="w-3 h-3" />
+                                    Live Map
+                                  </button>
+                                )}
+                                {b.status === 'Pending' && (
+                                  <button
+                                    onClick={() => handleUpdateStatus(b.id, 'Cancelled')}
+                                    className="text-[10px] text-red-600 font-semibold hover:underline"
+                                  >
+                                    Cancel
+                                  </button>
+                                )}
+                                {b.status === 'Completed' && (
+                                  <button
+                                    onClick={() => alert('Review submitted! Professional rating updated.')}
+                                    className="text-[10px] text-amber-600 font-semibold hover:underline"
+                                  >
+                                    Rate &amp; Review ★
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           </div>
                         ))}
@@ -948,8 +995,241 @@ export default function App() {
                     </div>
                   )}
 
+                  {/* SCREEN 6: LIVE MAP GPS TRACKING VIEW */}
+                  {simulatorView === 'map_tracking' && (
+                    <div className="flex-1 flex flex-col relative overflow-hidden bg-slate-100">
+                      {/* Interactive Map Canvas */}
+                      <div className="absolute inset-0 bg-[#E5E3DF] overflow-hidden">
+                        {/* Map Grid & Road Canvas */}
+                        <svg className="w-full h-full" viewBox="0 0 340 500" preserveAspectRatio="none">
+                          <defs>
+                            <linearGradient id="routeGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+                              <stop offset="0%" stopColor="#F59E0B" />
+                              <stop offset="100%" stopColor="#D97706" />
+                            </linearGradient>
+                            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                              <feGaussianBlur stdDeviation="3" result="blur" />
+                              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                          </defs>
+
+                          {/* Map Background Blocks */}
+                          <rect x="0" y="0" width="340" height="500" fill="#E8ECE9" />
+
+                          {/* Green Parks / Zones */}
+                          <rect x="20" y="320" width="100" height="120" rx="16" fill="#CDE3D1" opacity="0.8" />
+                          <rect x="180" y="40" width="130" height="90" rx="20" fill="#D2E8D6" opacity="0.7" />
+
+                          {/* River / Water Feature */}
+                          <path
+                            d="M -20,220 Q 80,180 160,240 T 360,200"
+                            fill="none"
+                            stroke="#A5C9EB"
+                            strokeWidth="28"
+                            strokeLinecap="round"
+                            opacity="0.85"
+                          />
+
+                          {/* City Road Network */}
+                          {/* Secondary Roads */}
+                          <path d="M 0,90 L 340,90" stroke="#FFFFFF" strokeWidth="6" />
+                          <path d="M 0,260 L 340,260" stroke="#FFFFFF" strokeWidth="8" />
+                          <path d="M 0,390 L 340,390" stroke="#FFFFFF" strokeWidth="6" />
+                          <path d="M 60,0 L 60,500" stroke="#FFFFFF" strokeWidth="7" />
+                          <path d="M 170,0 L 170,500" stroke="#FFFFFF" strokeWidth="10" />
+                          <path d="M 270,0 L 270,500" stroke="#FFFFFF" strokeWidth="7" />
+
+                          {/* Traffic Layer Lines */}
+                          {showTrafficLayer && (
+                            <>
+                              <path d="M 0,90 L 140,90" stroke="#22C55E" strokeWidth="3" opacity="0.9" />
+                              <path d="M 140,90 L 270,90" stroke="#EAB308" strokeWidth="3" opacity="0.9" />
+                              <path d="M 170,160 L 170,340" stroke="#22C55E" strokeWidth="4" opacity="0.9" />
+                              <path d="M 0,260 L 180,260" stroke="#EF4444" strokeWidth="3" opacity="0.8" />
+                            </>
+                          )}
+
+                          {/* Service Route (Start -> Waypoint 1 -> Waypoint 2 -> Destination) */}
+                          {/* Route Path coordinates: (50, 420) -> (170, 360) -> (170, 160) -> (270, 120) */}
+                          <path
+                            d="M 50,420 L 170,360 L 170,180 L 270,120"
+                            fill="none"
+                            stroke="#0F172A"
+                            strokeWidth="10"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            opacity="0.2"
+                          />
+                          <path
+                            d="M 50,420 L 170,360 L 170,180 L 270,120"
+                            fill="none"
+                            stroke="url(#routeGradient)"
+                            strokeWidth="6"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            filter="url(#glow)"
+                          />
+
+                          {/* Customer Destination Pin at (270, 120) */}
+                          <g transform="translate(270, 120)">
+                            <circle r="16" fill="#EF4444" opacity="0.25" className="animate-ping" />
+                            <circle r="12" fill="#EF4444" stroke="#FFFFFF" strokeWidth="2.5" />
+                            <circle r="4" fill="#FFFFFF" />
+                          </g>
+
+                          {/* Live Moving Technician Pin */}
+                          {/* Interpolate position based on mapProgress (0 to 100) */}
+                          {(() => {
+                            // 3 segments: Segment 1 (0-30%): (50, 420) to (170, 360)
+                            // Segment 2 (30-70%): (170, 360) to (170, 180)
+                            // Segment 3 (70-100%): (170, 180) to (270, 120)
+                            let tx = 50;
+                            let ty = 420;
+                            if (mapProgress <= 30) {
+                              const t = mapProgress / 30;
+                              tx = 50 + (170 - 50) * t;
+                              ty = 420 + (360 - 420) * t;
+                            } else if (mapProgress <= 70) {
+                              const t = (mapProgress - 30) / 40;
+                              tx = 170;
+                              ty = 360 + (180 - 360) * t;
+                            } else {
+                              const t = (mapProgress - 70) / 30;
+                              tx = 170 + (270 - 170) * t;
+                              ty = 180 + (120 - 180) * t;
+                            }
+                            return (
+                              <g transform={`translate(${tx}, ${ty})`}>
+                                <circle r="20" fill="#F59E0B" opacity="0.3" className="animate-ping" />
+                                <circle r="14" fill="#F59E0B" stroke="#FFFFFF" strokeWidth="3" />
+                                <circle r="6" fill="#0F172A" />
+                              </g>
+                            );
+                          })()}
+                        </svg>
+                      </div>
+
+                      {/* Top Overlay: Header & ETA Pill */}
+                      <div className="relative z-20 p-3 flex flex-col gap-2">
+                        <div className="flex items-center justify-between">
+                          <button
+                            onClick={() => setSimulatorView('bookings_list')}
+                            className="w-9 h-9 rounded-full bg-white/95 backdrop-blur shadow-md flex items-center justify-center text-slate-800 hover:bg-white"
+                          >
+                            <ArrowLeft className="w-4 h-4" />
+                          </button>
+
+                          {/* ETA Pill */}
+                          <div className="bg-white/95 backdrop-blur px-3.5 py-1.5 rounded-full shadow-md border border-slate-200 flex items-center gap-2">
+                            <Clock className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
+                            <span className="text-[11px] font-black text-slate-900">
+                              {mapProgress >= 100
+                                ? 'Technician Arrived!'
+                                : `Arriving in ~${Math.max(1, Math.round(12 * (1 - mapProgress / 100)))} mins (${Math.max(0.3, +(3.2 * (1 - mapProgress / 100)).toFixed(1))} km)`}
+                            </span>
+                          </div>
+
+                          <div className="w-9 h-9" />
+                        </div>
+                      </div>
+
+                      {/* Floating Interactive Map Controls */}
+                      <div className="absolute right-3 top-20 z-20 flex flex-col gap-1.5">
+                        <button
+                          onClick={() => setIsSimulatingMovement(!isSimulatingMovement)}
+                          title="Simulate Movement"
+                          className="w-8 h-8 rounded-xl bg-white shadow-md border border-slate-200 flex items-center justify-center text-slate-800 text-xs font-bold"
+                        >
+                          {isSimulatingMovement ? '⏸' : '▶'}
+                        </button>
+                        <button
+                          onClick={() => setMapProgress(0)}
+                          title="Reset Route"
+                          className="w-8 h-8 rounded-xl bg-white shadow-md border border-slate-200 flex items-center justify-center text-slate-800 text-[10px] font-bold"
+                        >
+                          ↺
+                        </button>
+                        <button
+                          onClick={() => setShowTrafficLayer(!showTrafficLayer)}
+                          title="Toggle Traffic Layer"
+                          className={`w-8 h-8 rounded-xl shadow-md border flex items-center justify-center transition-colors ${
+                            showTrafficLayer ? 'bg-amber-500 text-slate-950 border-amber-500 font-bold' : 'bg-white text-slate-600 border-slate-200'
+                          }`}
+                        >
+                          <Layers className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setMapProgress(100)}
+                          title="Jump to Arrival"
+                          className="w-8 h-8 rounded-xl bg-white shadow-md border border-slate-200 flex items-center justify-center text-emerald-600 text-[10px] font-bold"
+                        >
+                          🏁
+                        </button>
+                      </div>
+
+                      {/* Bottom Sliding Sheet: Live Driver Card */}
+                      <div className="mt-auto relative z-20 p-3">
+                        <div className="bg-white/95 backdrop-blur-md p-3.5 rounded-3xl border border-slate-200 shadow-xl space-y-3">
+                          {/* Live Status Header */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                              </span>
+                              <span className="text-[11px] font-bold text-amber-600">
+                                {mapProgress >= 100
+                                  ? 'Arrived at your door'
+                                  : mapProgress >= 70
+                                  ? 'Approaching your location'
+                                  : 'En route via Central Express'}
+                              </span>
+                            </div>
+                            <span className="text-[10px] font-semibold text-slate-500">
+                              Speed: {mapProgress >= 100 ? '0' : '32'} km/h
+                            </span>
+                          </div>
+
+                          {/* Technician Info */}
+                          <div className="flex items-center gap-3">
+                            <div className="w-11 h-11 rounded-full bg-amber-100 border-2 border-amber-500 flex items-center justify-center text-amber-700 font-black text-xs">
+                              JC
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1">
+                                <h5 className="text-xs font-bold text-slate-900 truncate">James Carter</h5>
+                                <CheckCircle className="w-3 h-3 text-emerald-500 fill-emerald-100" />
+                              </div>
+                              <p className="text-[10px] text-slate-500 truncate">Master Electrician • 4.9 ★</p>
+                            </div>
+                            <div className="flex gap-1.5">
+                              <button
+                                onClick={() => alert('Calling James Carter at +1 (555) 234-5678')}
+                                className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-emerald-600 hover:bg-slate-200"
+                              >
+                                <Phone className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => alert('Opening encrypted message chat with James Carter')}
+                                className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-amber-600 hover:bg-slate-200"
+                              >
+                                <MessageSquare className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Destination Address Pill */}
+                          <div className="bg-slate-50 p-2 rounded-xl flex items-center gap-2 border border-slate-100 text-[10px] text-slate-600">
+                            <MapPin className="w-3 h-3 text-red-500 flex-shrink-0" />
+                            <span className="truncate">{trackedBooking?.address || 'Flat 402, Oakwood Towers, Metro Blvd'}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Android Bottom Navigation */}
-                  <div className="bg-white border-t border-slate-200 py-2 px-6 flex items-center justify-between text-slate-400">
+                  <div className="bg-white border-t border-slate-200 py-2 px-4 flex items-center justify-between text-slate-400">
                     <button
                       onClick={() => setSimulatorView('home')}
                       className={`flex flex-col items-center gap-0.5 ${simulatorView === 'home' ? 'text-amber-500 font-bold' : ''}`}
@@ -963,6 +1243,16 @@ export default function App() {
                     >
                       <Wrench className="w-4 h-4" />
                       <span className="text-[9px]">Services</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (!trackedBooking) setTrackedBooking(bookings[0]);
+                        setSimulatorView('map_tracking');
+                      }}
+                      className={`flex flex-col items-center gap-0.5 ${simulatorView === 'map_tracking' ? 'text-amber-500 font-bold' : ''}`}
+                    >
+                      <Navigation className="w-4 h-4" />
+                      <span className="text-[9px]">Live Map</span>
                     </button>
                     <button
                       onClick={() => setSimulatorView('bookings_list')}
@@ -1127,6 +1417,82 @@ export default function App() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+
+            {/* Live Geographic Territory & Dispatch Radar */}
+            <div className="bg-slate-950 rounded-2xl border border-slate-800 p-5 space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h3 className="text-base font-bold text-white flex items-center gap-2">
+                    <Navigation className="w-4 h-4 text-amber-500" />
+                    City Dispatch Radar &amp; Service Coverage
+                  </h3>
+                  <p className="text-xs text-slate-400">Live geographic distribution of active technicians and pending service calls.</p>
+                </div>
+                <div className="flex items-center gap-3 text-xs">
+                  <span className="flex items-center gap-1 text-emerald-400">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400"></span> Available Technicians (8)
+                  </span>
+                  <span className="flex items-center gap-1 text-amber-400">
+                    <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> Active En Route (3)
+                  </span>
+                  <span className="flex items-center gap-1 text-red-400">
+                    <span className="w-2 h-2 rounded-full bg-red-400"></span> Service Locations (4)
+                  </span>
+                </div>
+              </div>
+
+              {/* Visual Radar Map Grid */}
+              <div className="relative h-64 bg-slate-900 rounded-xl border border-slate-800 overflow-hidden flex items-center justify-center">
+                <svg className="w-full h-full" viewBox="0 0 600 240" preserveAspectRatio="none">
+                  <defs>
+                    <radialGradient id="radarPulse" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%" stopColor="#F59E0B" stopOpacity="0.2" />
+                      <stop offset="100%" stopColor="#F59E0B" stopOpacity="0" />
+                    </radialGradient>
+                  </defs>
+
+                  {/* Territory Grid */}
+                  <line x1="0" y1="60" x2="600" y2="60" stroke="#1E293B" strokeWidth="1" />
+                  <line x1="0" y1="120" x2="600" y2="120" stroke="#1E293B" strokeWidth="1" />
+                  <line x1="0" y1="180" x2="600" y2="180" stroke="#1E293B" strokeWidth="1" />
+                  <line x1="150" y1="0" x2="150" y2="240" stroke="#1E293B" strokeWidth="1" />
+                  <line x1="300" y1="0" x2="300" y2="240" stroke="#1E293B" strokeWidth="1" />
+                  <line x1="450" y1="0" x2="450" y2="240" stroke="#1E293B" strokeWidth="1" />
+
+                  {/* Coverage Radius Circles */}
+                  <circle cx="210" cy="110" r="70" fill="url(#radarPulse)" stroke="#F59E0B" strokeWidth="1" strokeDasharray="4 4" />
+                  <circle cx="430" cy="130" r="60" fill="url(#radarPulse)" stroke="#F59E0B" strokeWidth="1" strokeDasharray="4 4" />
+
+                  {/* Route Lines */}
+                  <path d="M 120,160 Q 180,130 240,90" fill="none" stroke="#F59E0B" strokeWidth="2.5" strokeDasharray="4 4" />
+                  <path d="M 380,80 Q 420,120 460,160" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeDasharray="4 4" />
+
+                  {/* Technician Markers */}
+                  <g transform="translate(180, 130)">
+                    <circle r="8" fill="#F59E0B" />
+                    <circle r="14" fill="#F59E0B" opacity="0.3" className="animate-ping" />
+                  </g>
+                  <text x="180" y="152" fill="#F59E0B" fontSize="10" textAnchor="middle" fontWeight="bold">James C. (Electrician)</text>
+
+                  <g transform="translate(420, 120)">
+                    <circle r="8" fill="#22C55E" />
+                    <circle r="14" fill="#22C55E" opacity="0.3" className="animate-ping" />
+                  </g>
+                  <text x="420" y="142" fill="#22C55E" fontSize="10" textAnchor="middle" fontWeight="bold">Sarah M. (Plumber)</text>
+
+                  {/* Customer Destinations */}
+                  <g transform="translate(240, 90)">
+                    <rect x="-6" y="-6" width="12" height="12" rx="3" fill="#EF4444" />
+                  </g>
+                  <text x="240" y="78" fill="#EF4444" fontSize="10" textAnchor="middle" fontWeight="bold">Oakwood Towers #402</text>
+
+                  <g transform="translate(460, 160)">
+                    <rect x="-6" y="-6" width="12" height="12" rx="3" fill="#EF4444" />
+                  </g>
+                  <text x="460" y="180" fill="#EF4444" fontSize="10" textAnchor="middle" fontWeight="bold">Green Valley #14</text>
+                </svg>
               </div>
             </div>
           </div>
