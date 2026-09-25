@@ -1556,7 +1556,7 @@ export default function App() {
               <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 space-y-3">
                 <h4 className="text-sm font-bold text-amber-400 flex items-center gap-2">
                   <span className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs">4</span>
-                  Build APK &amp; Run
+                  Build APK &amp; Run (Locally on Phone)
                 </h4>
                 <p className="text-xs text-slate-300 leading-relaxed">
                   In AndroidIDE, tap the green <strong>Run / Build</strong> icon or execute the Gradle wrapper directly in the terminal:
@@ -1567,6 +1567,29 @@ export default function App() {
                 <p className="text-[11px] text-slate-400">
                   Output APK: <code className="text-slate-300">app/build/outputs/apk/debug/app-debug.apk</code>
                 </p>
+              </div>
+
+              {/* GitHub Actions Cloud APK Build Card */}
+              <div className="bg-slate-900 p-5 rounded-2xl border border-amber-500/30 space-y-3 md:col-span-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center text-xs font-black">5</span>
+                    GitHub Actions CI/CD (.github/workflows/android.yml)
+                  </h4>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    Automated Cloud APK Build Ready
+                  </span>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Every push to <code className="text-amber-400">main</code> automatically triggers GitHub runners to compile your Android project and generate downloadable debug APK artifacts directly in your repository’s <strong>Actions</strong> tab.
+                </p>
+                <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 font-mono text-[11px] text-slate-300 space-y-1">
+                  <div className="text-slate-400"># Push code to your GitHub repo to trigger automatic APK build:</div>
+                  <div className="text-amber-400">git add .</div>
+                  <div className="text-amber-400">git commit -m "Build Android APK via GitHub Actions"</div>
+                  <div className="text-amber-400">git push origin main</div>
+                  <div className="text-emerald-400 mt-2"># Download output artifact &quot;PlugPro-Debug-APK&quot; from GitHub repository &rarr; Actions &rarr; Artifacts</div>
+                </div>
               </div>
             </div>
           </div>
@@ -1584,6 +1607,11 @@ export default function App() {
             </p>
 
             <div className="bg-slate-900 p-4 rounded-2xl border border-slate-800 font-mono text-xs text-slate-300 space-y-1 overflow-x-auto">
+              <div>📁 <strong>.github/workflows/</strong></div>
+              <div className="pl-4">└── 📄 <strong>android.yml</strong> (Automated GitHub Actions CI/CD to build &amp; upload APK artifacts)</div>
+              <div>📁 <strong>gradle/wrapper/</strong></div>
+              <div className="pl-4">└── 📄 gradle-wrapper.properties (Gradle 8.2.2 distribution config)</div>
+              <div>📄 <strong>gradlew</strong> (Executable Gradle wrapper script)</div>
               <div>📁 <strong>app/</strong></div>
               <div className="pl-4">├── 📄 build.gradle (AGP 8.2.2, Material3, Firebase BOM, Glide)</div>
               <div className="pl-4">├── 📄 google-services.json</div>
