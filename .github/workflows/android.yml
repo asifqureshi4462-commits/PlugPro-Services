@@ -1,21 +1,33 @@
-name: Build Android APK
+name: Build PlugPro Android APK
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches:
+      - main
+      - master
   pull_request:
-    branches: [ "main", "master" ]
-  workflow_dispatch:
+    branches:
+      - main
+      - master
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build Android Debug & Release APK
+  build-apk:
+    name: Build Debug APK
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Check out repository
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
+      # Step 2: Set up OpenJDK 17
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -23,35 +35,109 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
+      # Step 3: Set up Android SDK
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-
-      - name: Prepare Gradle Wrapper
+      # Step 4: Locate project root (handles root or subfolder checkouts)
+      - name: Locate Android Root Directory
+        id: find-root
         run: |
-          if [ ! -f "./gradlew" ]; then
-            echo "Generating Gradle wrapper..."
-            gradle wrapper --gradle-version 8.2.2 --distribution-type bin
+          if [ -f "./gradlew" ]; then
+            echo "dir=." >> $GITHUB_OUTPUT
+          elif [ -f "./PlugPro-Services-main/gradlew" ]; then
+            echo "dir=./PlugPro-Services-main" >> $GITHUB_OUTPUT
+          else
+            # Search for settings.gradle
+            DIR=$(find . -maxdepth 3 -name "settings.gradle" -exec dirname {} \; | head -n 1)
+            if [ -n "$DIR" ]; then
+              echo "dir=$DIR" >> $GITHUB_OUTPUT
+            else
+              echo "dir=." >> $GITHUB_OUTPUT
+            fi
           fi
-          chmod +x ./gradlew
 
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace --no-daemon
-
-      - name: Verify Debug APK Output
+      # Step 5: Grant execution permission for gradlew
+      - name: Grant Execute Permission to Gradle Wrapper
+        working-directory: ${{ steps.find-root.outputs.dir }}
         run: |
-          ls -la app/build/outputs/apk/debug/
-          if [ ! -f "app/build/outputs/apk/debug/app-debug.apk" ]; then
-            echo "Debug APK build failed: file not found!"
+          if [ -f "gradlew" ]; then
+            chmod +x gradlew
+          fi
+
+      # Step 6: Ensure gradle-wrapper.jar exists (prevents standard Git missing-jar errors)
+      - name: Verify Gradle Wrapper Jar
+        working-directory: ${{ steps.find-root.outputs.dir }}
+        run: |
+          if [ ! -f "gradle/wrapper/gradle-wrapper.jar" ]; then
+            echo "gradle-wrapper.jar not found in git tracking. Downloading matching Gradle wrapper jar..."
+            mkdir -p gradle/wrapper
+            curl -sSL -o gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.2.2/gradle/wrapper/gradle-wrapper.jar || true
+          fi
+
+      # Step 7: Create a mock google-services.json if missing (prevents Google Services plugin failure)
+      - name: Check / Provide Fallback google-services.json
+        working-directory: ${{ steps.find-root.outputs.dir }}
+        run: |
+          if [ ! -f "app/google-services.json" ]; then
+            echo "Notice: app/google-services.json not committed. Injecting valid fallback stub for compilation..."
+            mkdir -p app
+            cat << 'EOF' > app/google-services.json
+          {
+            "project_info": {
+              "project_number": "123456789012",
+              "project_id": "plugpro-services-demo",
+              "storage_bucket": "plugpro-services-demo.appspot.com"
+            },
+            "client": [
+              {
+                "client_info": {
+                  "mobilesdk_app_id": "1:123456789012:android:abcdef0123456789abcdef",
+                  "android_client_info": {
+                    "package_name": "com.plugpro"
+                  }
+                },
+                "oauth_client": [],
+                "api_key": [
+                  {
+                    "current_key": "AIzaSyDummyKeyForGithubActionsBuildPass"
+                  }
+                ],
+                "services": {
+                  "appinvite_service": {
+                    "other_platform_oauth_client": []
+                  }
+                }
+              }
+            ],
+            "configuration_version": "1"
+          }
+          EOF
+          fi
+
+      # Step 8: Build Debug APK with Gradle
+      - name: Build Debug APK
+        working-directory: ${{ steps.find-root.outputs.dir }}
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+
+      # Step 9: Verify and Locate Output APK
+      - name: Locate Output APK
+        id: locate-apk
+        working-directory: ${{ steps.find-root.outputs.dir }}
+        run: |
+          APK_PATH=$(find app/build/outputs/apk/debug -name "*.apk" | head -n 1)
+          if [ -n "$APK_PATH" ]; then
+            echo "Found APK at: $APK_PATH"
+            echo "apk_path=${{ steps.find-root.outputs.dir }}/$APK_PATH" >> $GITHUB_OUTPUT
+          else
+            echo "Error: Output APK not found!"
             exit 1
           fi
 
+      # Step 10: Upload APK as downloadable artifact
       - name: Upload Debug APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: PlugPro-Debug-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: ${{ steps.locate-apk.outputs.apk_path }}
           retention-days: 14
-          if-no-files-found: error
