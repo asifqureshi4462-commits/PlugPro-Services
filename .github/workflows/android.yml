@@ -9,7 +9,7 @@ on:
     branches:
       - main
       - master
-  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -21,13 +21,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Check out repository
+      # Step 1: Checkout repository
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      # Step 2: Set up OpenJDK 17
+      # Step 2: Setup OpenJDK 17
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -35,11 +35,22 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      # Step 3: Set up Android SDK
+      # Step 3: Setup Android SDK (Explicitly specifying compileSdk 34 packages to avoid deprecated 'tools' error)
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: |
+            platform-tools
+            platforms;android-34
+            build-tools;34.0.0
 
-      # Step 4: Locate project root (handles root or subfolder checkouts)
+      # Step 4: Accept Android SDK licenses
+      - name: Accept Android SDK licenses
+        shell: bash
+        run: |
+          yes | sdkmanager --licenses >/dev/null 2>&1 || true
+
+      # Step 5: Locate project directory (handles root or subfolder checkouts)
       - name: Locate Android Root Directory
         id: find-root
         run: |
@@ -48,7 +59,6 @@ jobs:
           elif [ -f "./PlugPro-Services-main/gradlew" ]; then
             echo "dir=./PlugPro-Services-main" >> $GITHUB_OUTPUT
           else
-            # Search for settings.gradle
             DIR=$(find . -maxdepth 3 -name "settings.gradle" -exec dirname {} \; | head -n 1)
             if [ -n "$DIR" ]; then
               echo "dir=$DIR" >> $GITHUB_OUTPUT
@@ -57,7 +67,7 @@ jobs:
             fi
           fi
 
-      # Step 5: Grant execution permission for gradlew
+      # Step 6: Grant execution permission for gradlew
       - name: Grant Execute Permission to Gradle Wrapper
         working-directory: ${{ steps.find-root.outputs.dir }}
         run: |
@@ -65,22 +75,22 @@ jobs:
             chmod +x gradlew
           fi
 
-      # Step 6: Ensure gradle-wrapper.jar exists (prevents standard Git missing-jar errors)
+      # Step 7: Verify gradle-wrapper.jar exists (prevents missing jar failure)
       - name: Verify Gradle Wrapper Jar
         working-directory: ${{ steps.find-root.outputs.dir }}
         run: |
           if [ ! -f "gradle/wrapper/gradle-wrapper.jar" ]; then
-            echo "gradle-wrapper.jar not found in git tracking. Downloading matching Gradle wrapper jar..."
+            echo "gradle-wrapper.jar not found in git tracking. Downloading matching v8.2.2 wrapper jar..."
             mkdir -p gradle/wrapper
             curl -sSL -o gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.2.2/gradle/wrapper/gradle-wrapper.jar || true
           fi
 
-      # Step 7: Create a mock google-services.json if missing (prevents Google Services plugin failure)
+      # Step 8: Ensure valid google-services.json exists
       - name: Check / Provide Fallback google-services.json
         working-directory: ${{ steps.find-root.outputs.dir }}
         run: |
           if [ ! -f "app/google-services.json" ]; then
-            echo "Notice: app/google-services.json not committed. Injecting valid fallback stub for compilation..."
+            echo "Notice: app/google-services.json not found. Injecting fallback stub for compilation..."
             mkdir -p app
             cat << 'EOF' > app/google-services.json
           {
@@ -115,12 +125,12 @@ jobs:
           EOF
           fi
 
-      # Step 8: Build Debug APK with Gradle
+      # Step 9: Assemble Debug APK
       - name: Build Debug APK
         working-directory: ${{ steps.find-root.outputs.dir }}
         run: ./gradlew assembleDebug --no-daemon --stacktrace
 
-      # Step 9: Verify and Locate Output APK
+      # Step 10: Locate generated APK
       - name: Locate Output APK
         id: locate-apk
         working-directory: ${{ steps.find-root.outputs.dir }}
@@ -134,7 +144,7 @@ jobs:
             exit 1
           fi
 
-      # Step 10: Upload APK as downloadable artifact
+      # Step 11: Upload APK as downloadable artifact
       - name: Upload Debug APK Artifact
         uses: actions/upload-artifact@v4
         with:
