@@ -27,7 +27,7 @@ jobs:
         with:
           fetch-depth: 1
 
-      # Step 2: Setup OpenJDK 17
+      # Step 2: Set up OpenJDK 17
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -35,22 +35,12 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      # Step 3: Setup Android SDK (Explicitly specifying compileSdk 34 packages to avoid deprecated 'tools' error)
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          packages: |
-            platform-tools
-            platforms;android-34
-            build-tools;34.0.0
-
-      # Step 4: Accept Android SDK licenses
+      # Step 3: Accept Android SDK licenses (Uses pre-installed SDK on ubuntu-latest)
       - name: Accept Android SDK licenses
-        shell: bash
         run: |
-          yes | sdkmanager --licenses >/dev/null 2>&1 || true
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses >/dev/null 2>&1 || true
 
-      # Step 5: Locate project directory (handles root or subfolder checkouts)
+      # Step 4: Locate project directory (handles root or subfolder checkouts)
       - name: Locate Android Root Directory
         id: find-root
         run: |
@@ -67,7 +57,7 @@ jobs:
             fi
           fi
 
-      # Step 6: Grant execution permission for gradlew
+      # Step 5: Grant execution permission for gradlew
       - name: Grant Execute Permission to Gradle Wrapper
         working-directory: ${{ steps.find-root.outputs.dir }}
         run: |
@@ -75,17 +65,17 @@ jobs:
             chmod +x gradlew
           fi
 
-      # Step 7: Verify gradle-wrapper.jar exists (prevents missing jar failure)
+      # Step 6: Verify gradle-wrapper.jar exists (prevents missing jar failure)
       - name: Verify Gradle Wrapper Jar
         working-directory: ${{ steps.find-root.outputs.dir }}
         run: |
           if [ ! -f "gradle/wrapper/gradle-wrapper.jar" ]; then
-            echo "gradle-wrapper.jar not found in git tracking. Downloading matching v8.2.2 wrapper jar..."
+            echo "gradle-wrapper.jar not found in git. Downloading matching v8.2.2 wrapper jar..."
             mkdir -p gradle/wrapper
             curl -sSL -o gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.2.2/gradle/wrapper/gradle-wrapper.jar || true
           fi
 
-      # Step 8: Ensure valid google-services.json exists
+      # Step 7: Ensure fallback google-services.json exists
       - name: Check / Provide Fallback google-services.json
         working-directory: ${{ steps.find-root.outputs.dir }}
         run: |
@@ -125,12 +115,12 @@ jobs:
           EOF
           fi
 
-      # Step 9: Assemble Debug APK
+      # Step 8: Build Debug APK with Gradle
       - name: Build Debug APK
         working-directory: ${{ steps.find-root.outputs.dir }}
         run: ./gradlew assembleDebug --no-daemon --stacktrace
 
-      # Step 10: Locate generated APK
+      # Step 9: Locate generated APK
       - name: Locate Output APK
         id: locate-apk
         working-directory: ${{ steps.find-root.outputs.dir }}
@@ -144,7 +134,7 @@ jobs:
             exit 1
           fi
 
-      # Step 11: Upload APK as downloadable artifact
+      # Step 10: Upload APK as downloadable artifact
       - name: Upload Debug APK Artifact
         uses: actions/upload-artifact@v4
         with:
