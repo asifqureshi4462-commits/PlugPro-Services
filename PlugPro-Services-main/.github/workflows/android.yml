@@ -1,0 +1,62 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build & Package Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Setup Android SDK Tools
+        uses: android-actions/setup-android@v3
+
+      - name: Setup Gradle Build Tool
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.2.2
+
+      - name: Generate Official Gradle Wrapper
+        run: |
+          gradle wrapper --gradle-version 8.2.2 --distribution-type bin
+          chmod +x ./gradlew
+
+      - name: Build Debug APK with Gradle
+        run: ./gradlew assembleDebug --stacktrace --no-daemon
+
+      - name: Verify & List Output APK Files
+        run: |
+          echo "================================================="
+          echo "           BUILT APK ARTIFACTS FOUND             "
+          echo "================================================="
+          find app/build/outputs/apk/ -name "*.apk" -ls
+          if [ ! -f "app/build/outputs/apk/debug/app-debug.apk" ]; then
+            echo "Error: app-debug.apk was not generated!"
+            exit 1
+          fi
+
+      - name: Upload Debug APK to GitHub Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: PlugPro-Debug-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+          if-no-files-found: error

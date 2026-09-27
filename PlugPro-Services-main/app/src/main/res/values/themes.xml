@@ -1,0 +1,44 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme -->
+    <style name="Theme.PlugPro" parent="Theme.Material3.Light.NoActionBar">
+        <!-- Primary brand colors -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="android:colorBackground">@color/background</item>
+
+        <!-- Status bar and navigation bar -->
+        <item name="android:statusBarColor">@color/surface</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">@color/surface</item>
+        <item name="android:windowLightNavigationBar">true</item>
+
+        <!-- Material Component Styles -->
+        <item name="materialCardViewStyle">@style/Widget.PlugPro.CardView</item>
+        <item name="materialButtonStyle">@style/Widget.PlugPro.Button</item>
+    </style>
+
+    <!-- Splash Theme -->
+    <style name="Theme.PlugPro.Splash" parent="Theme.PlugPro">
+        <item name="android:statusBarColor">@color/primary</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:colorBackground">@color/primary</item>
+    </style>
+
+    <!-- Custom CardView Style with rounded corners -->
+    <style name="Widget.PlugPro.CardView" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardCornerRadius">@dimen/corner_radius_medium</item>
+        <item name="cardElevation">@dimen/card_elevation</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="strokeColor">@color/card_stroke</item>
+    </style>
+
+    <!-- Custom Button Style -->
+    <style name="Widget.PlugPro.Button" parent="Widget.Material3.Button">
+        <item name="cornerRadius">@dimen/corner_radius_medium</item>
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+</resources>
