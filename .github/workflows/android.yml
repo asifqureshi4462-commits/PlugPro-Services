@@ -33,9 +33,8 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'gradle'
 
-      # Step 3: Accept Android SDK licenses (Uses pre-installed SDK on ubuntu-latest)
+      # Step 3: Accept Android SDK licenses
       - name: Accept Android SDK licenses
         run: |
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses >/dev/null 2>&1 || true
@@ -44,9 +43,9 @@ jobs:
       - name: Locate Android Root Directory
         id: find-root
         run: |
-          if [ -f "./gradlew" ]; then
+          if [ -f "./gradlew" ] || [ -f "./build.gradle" ]; then
             echo "dir=." >> $GITHUB_OUTPUT
-          elif [ -f "./PlugPro-Services-main/gradlew" ]; then
+          elif [ -f "./PlugPro-Services-main/gradlew" ] || [ -f "./PlugPro-Services-main/build.gradle" ]; then
             echo "dir=./PlugPro-Services-main" >> $GITHUB_OUTPUT
           else
             DIR=$(find . -maxdepth 3 -name "settings.gradle" -exec dirname {} \; | head -n 1)
@@ -57,23 +56,19 @@ jobs:
             fi
           fi
 
-      # Step 5: Grant execution permission for gradlew
-      - name: Grant Execute Permission to Gradle Wrapper
-        working-directory: ${{ steps.find-root.outputs.dir }}
-        run: |
-          if [ -f "gradlew" ]; then
-            chmod +x gradlew
-          fi
+      # Step 5: Install official Gradle 8.2.2 on runner
+      - name: Setup Official Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.2.2'
 
-      # Step 6: Verify gradle-wrapper.jar exists (prevents missing jar failure)
-      - name: Verify Gradle Wrapper Jar
+      # Step 6: Regenerate clean, authentic Gradle Wrapper (fixes corrupt jar)
+      - name: Regenerate Valid Gradle Wrapper
         working-directory: ${{ steps.find-root.outputs.dir }}
         run: |
-          if [ ! -f "gradle/wrapper/gradle-wrapper.jar" ]; then
-            echo "gradle-wrapper.jar not found in git. Downloading matching v8.2.2 wrapper jar..."
-            mkdir -p gradle/wrapper
-            curl -sSL -o gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.2.2/gradle/wrapper/gradle-wrapper.jar || true
-          fi
+          rm -f gradle/wrapper/gradle-wrapper.jar
+          gradle wrapper --gradle-version 8.2.2
+          chmod +x gradlew
 
       # Step 7: Ensure fallback google-services.json exists
       - name: Check / Provide Fallback google-services.json
