@@ -34,7 +34,7 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # Step 3: Accept Android SDK licenses
+      # Step 3: Accept Android SDK licenses (Uses pre-installed SDK on ubuntu-latest)
       - name: Accept Android SDK licenses
         run: |
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses >/dev/null 2>&1 || true
@@ -43,9 +43,9 @@ jobs:
       - name: Locate Android Root Directory
         id: find-root
         run: |
-          if [ -f "./gradlew" ] || [ -f "./build.gradle" ]; then
+          if [ -f "./build.gradle" ] || [ -f "./settings.gradle" ]; then
             echo "dir=." >> $GITHUB_OUTPUT
-          elif [ -f "./PlugPro-Services-main/gradlew" ] || [ -f "./PlugPro-Services-main/build.gradle" ]; then
+          elif [ -f "./PlugPro-Services-main/build.gradle" ] || [ -f "./PlugPro-Services-main/settings.gradle" ]; then
             echo "dir=./PlugPro-Services-main" >> $GITHUB_OUTPUT
           else
             DIR=$(find . -maxdepth 3 -name "settings.gradle" -exec dirname {} \; | head -n 1)
@@ -56,18 +56,18 @@ jobs:
             fi
           fi
 
-      # Step 5: Install official Gradle 8.2.2 on runner
+      # Step 5: Install official Gradle 8.5 (100% compatible with AGP 8.2.2)
       - name: Setup Official Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.2.2'
+          gradle-version: '8.5'
 
-      # Step 6: Regenerate clean, authentic Gradle Wrapper (fixes corrupt jar)
+      # Step 6: Regenerate clean, authentic Gradle Wrapper (fixes corrupt jar & wrong version)
       - name: Regenerate Valid Gradle Wrapper
         working-directory: ${{ steps.find-root.outputs.dir }}
         run: |
-          rm -f gradle/wrapper/gradle-wrapper.jar
-          gradle wrapper --gradle-version 8.2.2
+          rm -rf gradle/wrapper/gradle-wrapper.jar
+          gradle wrapper --gradle-version 8.5 --distribution-type bin
           chmod +x gradlew
 
       # Step 7: Ensure fallback google-services.json exists
