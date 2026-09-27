@@ -34,12 +34,12 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # Step 3: Accept Android SDK licenses (Uses pre-installed SDK on ubuntu-latest)
+      # Step 3: Accept Android SDK licenses
       - name: Accept Android SDK licenses
         run: |
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses >/dev/null 2>&1 || true
 
-      # Step 4: Locate project directory (handles root or subfolder checkouts)
+      # Step 4: Locate project directory
       - name: Locate Android Root Directory
         id: find-root
         run: |
@@ -56,13 +56,13 @@ jobs:
             fi
           fi
 
-      # Step 5: Install official Gradle 8.5 (100% compatible with AGP 8.2.2)
+      # Step 5: Install official Gradle 8.5
       - name: Setup Official Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.5'
 
-      # Step 6: Regenerate clean, authentic Gradle Wrapper (fixes corrupt jar & wrong version)
+      # Step 6: Regenerate clean Gradle Wrapper
       - name: Regenerate Valid Gradle Wrapper
         working-directory: ${{ steps.find-root.outputs.dir }}
         run: |
@@ -70,7 +70,28 @@ jobs:
           gradle wrapper --gradle-version 8.5 --distribution-type bin
           chmod +x gradlew
 
-      # Step 7: Ensure fallback google-services.json exists
+      # Step 7: Auto-Fix build.gradle (Removes conflicting allprojects block for Gradle 8+)
+      - name: Fix root build.gradle for Gradle 8
+        working-directory: ${{ steps.find-root.outputs.dir }}
+        run: |
+          cat << 'EOF' > build.gradle
+          buildscript {
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+              dependencies {
+                  classpath 'com.android.tools.build:gradle:8.2.2'
+                  classpath 'com.google.gms:google-services:4.4.1'
+              }
+          }
+
+          tasks.register('clean', Delete) {
+              delete rootProject.layout.buildDirectory
+          }
+          EOF
+
+      # Step 8: Ensure fallback google-services.json exists
       - name: Check / Provide Fallback google-services.json
         working-directory: ${{ steps.find-root.outputs.dir }}
         run: |
@@ -110,12 +131,12 @@ jobs:
           EOF
           fi
 
-      # Step 8: Build Debug APK with Gradle
+      # Step 9: Build Debug APK with Gradle
       - name: Build Debug APK
         working-directory: ${{ steps.find-root.outputs.dir }}
         run: ./gradlew assembleDebug --no-daemon --stacktrace
 
-      # Step 9: Locate generated APK
+      # Step 10: Locate generated APK
       - name: Locate Output APK
         id: locate-apk
         working-directory: ${{ steps.find-root.outputs.dir }}
@@ -129,7 +150,7 @@ jobs:
             exit 1
           fi
 
-      # Step 10: Upload APK as downloadable artifact
+      # Step 11: Upload APK as downloadable artifact
       - name: Upload Debug APK Artifact
         uses: actions/upload-artifact@v4
         with:
